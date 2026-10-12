@@ -65,31 +65,15 @@ on this board too.
 |5V    |+5V           |        |5V            |              |
 
 [^1]: JTAG FPGA loader
-[^2]: Individually named (not numbered) in Sipeed's own datasheet dimension
-drawing — they're not part of the numbered 2x20 header.
+[^2]: Named, not numbered, on the Tang Nano 20K board.
 
-Pin numbers in the "Ai-M62-12F pin" column are the Ai-M62-12F-Kit's own
-silkscreen header numbering (see its [pinout
-datasheet](https://en.ai-thinker.com)), not a Tang Nano 20K pin map.
-
-The "Tang Nano 20K pin" column is the physical pin number silkscreened on
-the Tang Nano 20K's own 2x20 header (the side nearest the HDMI connector).
-These are verified against two independent sources that agree exactly:
-the `m0s[0..4]` pin assignments in
-[nanomig.cst](https://github.com/MiSTle-Dev/nanomig/blob/main/src/tang/nano20k/nanomig.cst)
-(`m0s[0]`=MISO, `m0s[1]`=MOSI, `m0s[2]`=CSN, `m0s[3]`=SCK, `m0s[4]`=IRQ),
-and Sipeed's own [Tang Nano 20K
-datasheet](https://dl.sipeed.com/fileList/TANG/Nano_20K/1_Datasheet/Sipeed%20Tang%20nano%2020K%20Datasheet%20V1.3-en_US.pdf)
-pinout diagram, which prints the same pin numbers next to the same Gowin
-pin names (e.g. pin 42 = `IOB42B`). Sipeed's own example labels on those
-pins (e.g. `I2S_BCLK`, `PA_EN`) are just their suggested audio use —
-NanoMig repurposes the same general-purpose pins for SPI.
-
-JTAG (TMS/TCK/TDI/TDO) is **not** on the 2x20 header at all — it's four
-individually named but unnumbered test pads near the top edge of the Tang
-Nano 20K PCB (also shown this way in Sipeed's own datasheet). Identify
-them by name from the photo below (same pads used for the M0S Dock wiring
-above), not by a pin number.
+The "Ai-M62-12F pin" column is the Ai-M62's own header numbering. The
+"Tang Nano 20K pin" column is the number printed on the Tang Nano 20K
+board itself next to each pin, on the header nearest the HDMI connector.
+JTAG isn't on that header — it's the four named test pads near the top
+edge of the board, only needed if you want the companion to reflash/
+switch cores itself; for keyboard/mouse/SD/OSD support, SPI + GND + 5V
+on that one header is all you need.
 
 ### Flashing notes specific to this board
 
