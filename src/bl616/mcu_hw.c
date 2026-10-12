@@ -102,6 +102,12 @@ extern void bl_show_chipinfo(void);
 #include "./sdc_direct.h"
 #define PIN_UART_TX  GPIO_PIN_21
 #define PIN_UART_RX  GPIO_PIN_22
+#elif AIM62_12F
+#warning "Building for Ai-M62-12F-Kit BL616"
+#include "../jtag.h"
+#include "./sdc_direct.h"
+#define PIN_UART_TX  GPIO_PIN_21
+#define PIN_UART_RX  GPIO_PIN_22
 #elif TANG_MEGA138KPRO
 #warning "Building for TANG_MEGA138KPRO internal BL616"
 #include "../jtag.h"
@@ -138,7 +144,7 @@ volatile uint32_t *reg_gpio_tms = (volatile uint32_t *)0x20000904; // gpio_cfg16
 volatile uint32_t *reg_gpio_tck = (volatile uint32_t *)0x200008ec; // gpio_cfg10
 volatile uint32_t *reg_gpio_tdo = (volatile uint32_t *)0x200008fc; // gpio_cfg14
 volatile uint32_t *reg_gpio_tdi = (volatile uint32_t *)0x200008f4; // gpio_cfg12
-#elif defined(M0S_DOCK)
+#elif defined(M0S_DOCK) || defined(AIM62_12F)
 #define PIN_JTAG_TMS GPIO_PIN_0
 #define PIN_JTAG_TCK GPIO_PIN_1
 #define PIN_JTAG_TDI GPIO_PIN_3
@@ -1210,6 +1216,17 @@ static struct bflb_device_s *spi_dev;
   #define SPI_PIN_CSN   GPIO_PIN_12
   #define SPI_PIN_SCK   GPIO_PIN_13
   #define SPI_PIN_MISO  GPIO_PIN_10
+  #define SPI_PIN_MOSI  GPIO_PIN_11
+  #define SPI_PIN_IRQ   GPIO_PIN_14
+#elif defined(AIM62_12F)
+  /* Ai-M62-12F-Kit's 30-pin header does not break out GPIO10/GPIO13,
+     so SCK/MISO are remapped to GPIO29/GPIO30, which are exposed and
+     free (GPIO30's alternate function is even labelled SPI_MISO on
+     this board's own pin table). CSN/MOSI/IRQ are unchanged from the
+     stock M0S Dock pinout since those pins are exposed here too. */
+  #define SPI_PIN_CSN   GPIO_PIN_12
+  #define SPI_PIN_SCK   GPIO_PIN_29
+  #define SPI_PIN_MISO  GPIO_PIN_30
   #define SPI_PIN_MOSI  GPIO_PIN_11
   #define SPI_PIN_IRQ   GPIO_PIN_14
 #elif defined(TANG_NANO20K)
@@ -2654,7 +2671,7 @@ void mcu_hw_jtag_set_pins(uint8_t dir, uint8_t data) {
    vTaskDelay(pdMS_TO_TICKS(250));
 
    bflb_irq_disable(gpio->irq_num);
-#if !defined(TANG_NANO20K) && !defined(TANG_NANO20K_V3923) && !defined(M0S_DOCK)
+#if !defined(TANG_NANO20K) && !defined(TANG_NANO20K_V3923) && !defined(M0S_DOCK) && !defined(AIM62_12F)
     bflb_gpio_deinit(gpio, SPI_PIN_MISO);
     bflb_gpio_deinit(gpio, SPI_PIN_MOSI);
     bflb_gpio_deinit(gpio, SPI_PIN_SCK);
@@ -2670,7 +2687,7 @@ void mcu_hw_jtag_set_pins(uint8_t dir, uint8_t data) {
     bflb_gpio_init(gpio, PIN_JTAG_TDO, GPIO_INPUT  | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_3);
     bflb_gpio_init(gpio, PIN_JTAG_TDI, GPIO_OUTPUT | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_3);
     bflb_gpio_init(gpio, PIN_JTAG_TMS, GPIO_OUTPUT | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_3);
-#if !defined(TANG_NANO20K) && !defined(TANG_NANO20K_V3923) && !defined(M0S_DOCK)
+#if !defined(TANG_NANO20K) && !defined(TANG_NANO20K_V3923) && !defined(M0S_DOCK) && !defined(AIM62_12F)
     bflb_gpio_set(gpio, PIN_JTAGSEL); // select JTAG mode
     sys_jtagsel(true);    
 #endif
@@ -2881,7 +2898,7 @@ void mcu_hw_fpga_resume_spi(void) {
   bflb_gpio_deinit(gpio, PIN_JTAG_TMS);
   bflb_gpio_deinit(gpio, PIN_JTAG_TDO);
 
-#if !defined(TANG_NANO20K) && !defined(TANG_NANO20K_V3923) && !defined(M0S_DOCK)
+#if !defined(TANG_NANO20K) && !defined(TANG_NANO20K_V3923) && !defined(M0S_DOCK) && !defined(AIM62_12F)
   bflb_gpio_init(gpio, SPI_PIN_MISO, GPIO_FUNC_SPI0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_3);
   bflb_gpio_init(gpio, SPI_PIN_MOSI, GPIO_FUNC_SPI0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_3);
   bflb_gpio_init(gpio, SPI_PIN_SCK, GPIO_FUNC_SPI0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_3);

@@ -26,8 +26,10 @@ elseif(TANG_BOARD STREQUAL "nano20k_v3923")
     add_definitions(-DTANG_NANO20K_V3923)
 elseif(TANG_BOARD STREQUAL "m0sdock")
     add_definitions(-DM0S_DOCK)
+elseif(TANG_BOARD STREQUAL "aim62")
+    add_definitions(-DAIM62_12F)
 else()
-   message(FATAL_ERROR "TANG_BOARD must be mega60k, mega138kpro, console60k, primer25k, nano20k, nano20k_v3923 or m0sdock")
+   message(FATAL_ERROR "TANG_BOARD must be mega60k, mega138kpro, console60k, primer25k, nano20k, nano20k_v3923, m0sdock or aim62")
 endif()
 
 find_package(bouffalo_sdk REQUIRED HINTS $ENV{BL_SDK_BASE})
@@ -64,6 +66,15 @@ target_sources(app PRIVATE
 
 file(GLOB COMPONENT_SRCS ../u8g2/csrc/*.c  ../u8g2/sys/bitmap/common/*.c)
 target_sources(app PRIVATE ${COMPONENT_SRCS})
+
+# GCC 14 made these C23-conformance checks hard errors by default (not just
+# warnings), which breaks a couple of pre-existing, functionally-harmless
+# spots in mcu_hw.c (a missing fhost_api.h include, and a TimerHandle_t vs
+# void* callback signature) that aren't related to our board/pin changes.
+target_compile_options(app PRIVATE
+    -Wno-error=implicit-function-declaration
+    -Wno-error=incompatible-pointer-types
+)
 
 sdk_set_main_file(../main.c)
 

@@ -34,6 +34,58 @@ Location GPIO 0,1,3,20 for JTAG purposes on M0S sub-module PCBA. M0S Dock top si
 
 ![M0S](M0S.png)
 
+## Example wiring Ai-Thinker Ai-M62-12F-Kit (BL616 MPU)
+
+The [Ai-M62-12F-Kit](https://docs.ai-thinker.com/en/ai_m62/) is a cheap, widely
+available NodeMCU-style breakout board for the BL616, usable as an alternative
+to the M0S Dock. Build with `TANG_BOARD=aim62`.
+
+Its 30-pin header does **not** break out GPIO10 or GPIO13, which the M0S Dock
+wiring uses for SPI MISO/SCK. The `aim62` board target therefore remaps those
+two signals to GPIO29/GPIO30 instead — both confirmed in the BL616 datasheet's
+pin-mux table to support the `SPI_MISO`/`SPI_SCLK` alternate function, so this
+is a supported pin choice, not a bit-banged workaround. CSN/MOSI/IRQ and all
+JTAG pins are unchanged from the M0S Dock wiring, since those pins are exposed
+on this board too.
+
+|Ai-M62-12F pin|Signal      |BL616 GPIO|Note        |
+|------|------------- |--------|--------------|
+|7     |JTAG TMS[^1]  |GPIO  0 |              |
+|5     |JTAG TCK[^1]  |GPIO  1 |              |
+|28    |JTAG TDI[^1]  |GPIO  3 |              |
+|2     |JTAG TDO[^1]  |GPIO 20 |              |
+|21    |CSN           |GPIO 12 |              |
+|29    |SCK           |GPIO 29 |not GPIO 13, see above|
+|6     |MISO          |GPIO 30 |not GPIO 10, see above|
+|20    |MOSI          |GPIO 11 |              |
+|9     |IRQN          |GPIO 14 |              |
+|RX    |BL616 UART RX |GPIO 21 |debug console |
+|TX    |BL616 UART TX |GPIO 22 |debug console |
+|GND   |GND           |        |              |
+|5V    |+5V           |        |              |
+
+[^1]: JTAG FPGA loader
+
+Pin numbers above are the Ai-M62-12F-Kit's own silkscreen header numbering
+(see its [pinout datasheet](https://en.ai-thinker.com)), not a physical
+Tang pin map — wire them to the same Tang Nano 20K JTAG/SPI pins shown for
+the M0S Dock above.
+
+### Flashing notes specific to this board
+
+The Ai-M62-12F-Kit enters its ROM bootloader via two buttons rather than a
+single BOOT button: hold **Burn**, tap **Reset** once (while still holding
+Burn), then release Burn.
+
+`BLFlashCommand`'s automatic reset-retry logic (it toggles the serial port's
+control lines and retries the sync handshake a few times) can repeatedly
+reset the chip mid-attempt. If Reset is wired to that control line but Burn
+is not, each automatic retry reboots straight back into whatever firmware is
+already on the chip unless Burn is still physically held down at that exact
+moment. In practice this means: **keep Burn held down for the whole flash
+attempt**, not just released beforehand — release it only once flashing has
+finished.
+
 ## Tang integrated onboard BL616 MPU
 
 JTAG signals, UART RX and TX are re-purposed as SPI and control interface. MPU is Master and FPGA is slave. UART RX GPIO is board specific and used as an SPI interrupt input. The UART TX GPIO is a board-specific signal used to control the FPGA’s dedicated JTAG hw pins and determine whether the interface operates in native JTAG or SPI mode. Nano 20k always stays in JTAG active enabled mode as both JTAG and SPI are as dedicated hw pins available.  
@@ -99,7 +151,7 @@ git submodule update
 CROSS_COMPILE=<where you downloaded the toolchain>/toolchain_gcc_t-head_linux/bin/riscv64-unknown-elf- BL_SDK_BASE=<where you downloaded the sdk>/bouffalo_sdk/ make
 ```
 
-for a specific board select in between: m0sdock nano20k console60k mega60k mega138kpro primer25k console138k nano20k_v3923
+for a specific board select in between: m0sdock nano20k console60k mega60k mega138kpro primer25k console138k nano20k_v3923 aim62
 
 ```shell
 BL_SDK_BASE=<where you downloaded the sdk>/bouffalo_sdk/ make TANG_BOARD=console60k
@@ -176,6 +228,30 @@ sdk_add_link_options
  -fno-lto
  ```
 
+This isn't actually Windows-specific — it's needed whenever the prebuilt
+`libmacsw_bl616.a` (the closed-source WiFi radio library bundled with the
+SDK) was built with an older GCC than the one you're compiling with. It was
+needed on macOS too, building with the [macOS arm64 Xuantie
+toolchain](https://github.com/Staars/bouffalo-toolchain-macos-arm64)
+(GCC 14.1.1): the bundled `libmacsw_bl616.a` ships LTO bytecode from GCC 9,
+which a GCC 14 linker refuses to consume.
+
+That same newer-GCC combination also surfaces two unrelated, functionally
+harmless build errors that older GCC versions only warned about: a missing
+`fhost_api.h` include (`fhost_init` implicit declaration) in `mcu_hw.c`'s
+WiFi init path, and a `TimerHandle_t`-vs-`void*` callback signature mismatch
+in the USB-Ethernet (RTL8152) DHCP timer setup — both just pointer-typed
+values under the hood. If you hit these, downgrading them back to warnings
+unblocks the build without touching the affected logic:
+
+```shell
+sdk_add_compile_options(
+    -Wno-error=implicit-function-declaration
+    -Wno-error=incompatible-pointer-types
+    -Wno-error=int-conversion
+)
+```
+
 Install [Git for Windows](https://gitforwindows.org)
 
 Install [cmake for Windows](https://cmake.org/download)
@@ -246,7 +322,7 @@ make clean
 make
 ```
 
-for a specific board select in between: m0sdock nano20k console60k mega60k mega138kpro primer25k
+for a specific board select in between: m0sdock nano20k console60k mega60k mega138kpro primer25k aim62
 
 ```shell
 make TANG_BOARD=console60k
