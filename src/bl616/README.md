@@ -75,6 +75,21 @@ edge of the board, only needed if you want the companion to reflash/
 switch cores itself; for keyboard/mouse/SD/OSD support, SPI + GND + 5V
 on that one header is all you need.
 
+All five SPI signals plus GND/5V are on that one header, counting down
+from the end nearest the USB-C connector:
+
+| Position from top | Tang Nano 20K pin | Signal |
+|---|---|---|
+| 1 | 5V | power |
+| 2 | GND | ground |
+| 3 | 76 | (unused) |
+| 4 | 80 | (unused) |
+| 5 | 42 | MISO |
+| 6 | 41 | MOSI |
+| 7 | 56 | CSN |
+| 8 | 54 | SCK |
+| 9 | 51 | IRQ |
+
 ### Flashing notes specific to this board
 
 The Ai-M62-12F-Kit enters its ROM bootloader via two buttons rather than a
