@@ -1222,13 +1222,27 @@ static struct bflb_device_s *spi_dev;
   /* Ai-M62-12F-Kit's 30-pin header does not break out GPIO10/GPIO13,
      so SCK/MISO are remapped to GPIO29/GPIO30, which are exposed and
      free (GPIO30's alternate function is even labelled SPI_MISO on
-     this board's own pin table). CSN/MOSI/IRQ are unchanged from the
-     stock M0S Dock pinout since those pins are exposed here too. */
-  #define SPI_PIN_CSN   GPIO_PIN_12
+     this board's own pin table).
+
+     GPIO11/GPIO12/GPIO14 (the stock M0S Dock pins for MOSI/CSN/IRQ)
+     are listed "/NC" in Ai-Thinker's own pin table: this module's
+     flash is wired in Quad-SPI mode (confirmed via Zephyr's board
+     port, which configures spi-bus-mode = 4 and deliberately avoids
+     these three pins for its own SPI peripheral), and the BL616 has
+     no on-die flash - it executes code from that QSPI flash
+     continuously, so these pins are not available for other use.
+     MOSI/CSN are remapped to GPIO27/GPIO28 instead, both confirmed
+     free and SPI-capable (SPI_MOSI/SPI_SS) in Ai-Thinker's pin table
+     and independently validated by Zephyr's own spi0_default pinctrl
+     group, which uses the same GPIO27 for MOSI. IRQ is remapped to
+     GPIO3, reclaimed from the JTAG TDI assignment below since JTAG
+     is not required for core-reflash-free operation (SD/USB/OSD) and
+     there are no further free pins left on this module otherwise. */
+  #define SPI_PIN_CSN   GPIO_PIN_28
   #define SPI_PIN_SCK   GPIO_PIN_29
   #define SPI_PIN_MISO  GPIO_PIN_30
-  #define SPI_PIN_MOSI  GPIO_PIN_11
-  #define SPI_PIN_IRQ   GPIO_PIN_14
+  #define SPI_PIN_MOSI  GPIO_PIN_27
+  #define SPI_PIN_IRQ   GPIO_PIN_3
 #elif defined(TANG_NANO20K)
   #define SPI_PIN_CSN   GPIO_PIN_0  /* out SPI_CSn */
   #define SPI_PIN_SCK   GPIO_PIN_1  /* out SPI_SCLK */
