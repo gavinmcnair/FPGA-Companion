@@ -50,10 +50,10 @@ on this board too.
 
 |Ai-M62-12F pin|Signal      |BL616 GPIO|Tang Nano 20K pin|Note        |
 |------|------------- |--------|--------------|--------------|
-|7     |JTAG TMS[^1]  |GPIO  0 |TP (no number)|see JTAG note below|
-|5     |JTAG TCK[^1]  |GPIO  1 |TP (no number)|see JTAG note below|
-|28    |JTAG TDI[^1]  |GPIO  3 |TP (no number)|see JTAG note below|
-|2     |JTAG TDO[^1]  |GPIO 20 |TP (no number)|see JTAG note below|
+|7     |JTAG TMS[^1]  |GPIO  0 |TMS test pad[^2]|see JTAG note below|
+|5     |JTAG TCK[^1]  |GPIO  1 |TCK test pad[^2]|see JTAG note below|
+|28    |JTAG TDI[^1]  |GPIO  3 |TDI test pad[^2]|see JTAG note below|
+|2     |JTAG TDO[^1]  |GPIO 20 |TDO test pad[^2]|see JTAG note below|
 |21    |CSN           |GPIO 12 |56            |              |
 |29    |SCK           |GPIO 29 |54            |not GPIO 13, see above|
 |6     |MISO          |GPIO 30 |42            |not GPIO 10, see above|
@@ -65,6 +65,8 @@ on this board too.
 |5V    |+5V           |        |5V            |              |
 
 [^1]: JTAG FPGA loader
+[^2]: Individually named (not numbered) in Sipeed's own datasheet dimension
+drawing — they're not part of the numbered 2x20 header.
 
 Pin numbers in the "Ai-M62-12F pin" column are the Ai-M62-12F-Kit's own
 silkscreen header numbering (see its [pinout
@@ -84,9 +86,10 @@ pins (e.g. `I2S_BCLK`, `PA_EN`) are just their suggested audio use —
 NanoMig repurposes the same general-purpose pins for SPI.
 
 JTAG (TMS/TCK/TDI/TDO) is **not** on the 2x20 header at all — it's four
-small unnumbered test pads near the top edge of the Tang Nano 20K PCB.
-Identify them from the photo below (same pads used for the M0S Dock
-wiring above), not by a pin number.
+individually named but unnumbered test pads near the top edge of the Tang
+Nano 20K PCB (also shown this way in Sipeed's own datasheet). Identify
+them by name from the photo below (same pads used for the M0S Dock wiring
+above), not by a pin number.
 
 ### Flashing notes specific to this board
 
