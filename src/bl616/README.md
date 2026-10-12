@@ -48,28 +48,45 @@ is a supported pin choice, not a bit-banged workaround. CSN/MOSI/IRQ and all
 JTAG pins are unchanged from the M0S Dock wiring, since those pins are exposed
 on this board too.
 
-|Ai-M62-12F pin|Signal      |BL616 GPIO|Note        |
-|------|------------- |--------|--------------|
-|7     |JTAG TMS[^1]  |GPIO  0 |              |
-|5     |JTAG TCK[^1]  |GPIO  1 |              |
-|28    |JTAG TDI[^1]  |GPIO  3 |              |
-|2     |JTAG TDO[^1]  |GPIO 20 |              |
-|21    |CSN           |GPIO 12 |              |
-|29    |SCK           |GPIO 29 |not GPIO 13, see above|
-|6     |MISO          |GPIO 30 |not GPIO 10, see above|
-|20    |MOSI          |GPIO 11 |              |
-|9     |IRQN          |GPIO 14 |              |
-|RX    |BL616 UART RX |GPIO 21 |debug console |
-|TX    |BL616 UART TX |GPIO 22 |debug console |
-|GND   |GND           |        |              |
-|5V    |+5V           |        |              |
+|Ai-M62-12F pin|Signal      |BL616 GPIO|Tang Nano 20K pin|Note        |
+|------|------------- |--------|--------------|--------------|
+|7     |JTAG TMS[^1]  |GPIO  0 |TP (no number)|see JTAG note below|
+|5     |JTAG TCK[^1]  |GPIO  1 |TP (no number)|see JTAG note below|
+|28    |JTAG TDI[^1]  |GPIO  3 |TP (no number)|see JTAG note below|
+|2     |JTAG TDO[^1]  |GPIO 20 |TP (no number)|see JTAG note below|
+|21    |CSN           |GPIO 12 |56            |              |
+|29    |SCK           |GPIO 29 |54            |not GPIO 13, see above|
+|6     |MISO          |GPIO 30 |42            |not GPIO 10, see above|
+|20    |MOSI          |GPIO 11 |41            |              |
+|9     |IRQN          |GPIO 14 |51            |              |
+|RX    |BL616 UART RX |GPIO 21 |-             |debug console |
+|TX    |BL616 UART TX |GPIO 22 |-             |debug console |
+|GND   |GND           |        |GND           |              |
+|5V    |+5V           |        |5V            |              |
 
 [^1]: JTAG FPGA loader
 
-Pin numbers above are the Ai-M62-12F-Kit's own silkscreen header numbering
-(see its [pinout datasheet](https://en.ai-thinker.com)), not a physical
-Tang pin map — wire them to the same Tang Nano 20K JTAG/SPI pins shown for
-the M0S Dock above.
+Pin numbers in the "Ai-M62-12F pin" column are the Ai-M62-12F-Kit's own
+silkscreen header numbering (see its [pinout
+datasheet](https://en.ai-thinker.com)), not a Tang Nano 20K pin map.
+
+The "Tang Nano 20K pin" column is the physical pin number silkscreened on
+the Tang Nano 20K's own 2x20 header (the side nearest the HDMI connector).
+These are verified against two independent sources that agree exactly:
+the `m0s[0..4]` pin assignments in
+[nanomig.cst](https://github.com/MiSTle-Dev/nanomig/blob/main/src/tang/nano20k/nanomig.cst)
+(`m0s[0]`=MISO, `m0s[1]`=MOSI, `m0s[2]`=CSN, `m0s[3]`=SCK, `m0s[4]`=IRQ),
+and Sipeed's own [Tang Nano 20K
+datasheet](https://dl.sipeed.com/fileList/TANG/Nano_20K/1_Datasheet/Sipeed%20Tang%20nano%2020K%20Datasheet%20V1.3-en_US.pdf)
+pinout diagram, which prints the same pin numbers next to the same Gowin
+pin names (e.g. pin 42 = `IOB42B`). Sipeed's own example labels on those
+pins (e.g. `I2S_BCLK`, `PA_EN`) are just their suggested audio use —
+NanoMig repurposes the same general-purpose pins for SPI.
+
+JTAG (TMS/TCK/TDI/TDO) is **not** on the 2x20 header at all — it's four
+small unnumbered test pads near the top edge of the Tang Nano 20K PCB.
+Identify them from the photo below (same pads used for the M0S Dock
+wiring above), not by a pin number.
 
 ### Flashing notes specific to this board
 
